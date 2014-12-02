@@ -1,6 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using SteamKit2;
 using SteamTrade;
+using SteamTrade.TradeOffer;
 
 namespace SteamBot
 {
@@ -10,13 +13,45 @@ namespace SteamBot
     /// </summary>
     public abstract class UserHandler
     {
-        protected Bot Bot;
-        protected SteamID OtherSID;
+        public Bot Bot { get; private set; }
+        public SteamID OtherSID { get; private set; }
+
+        private Task<Inventory> otherInventoryTask;
 
         public UserHandler (Bot bot, SteamID sid)
         {
             Bot = bot;
             OtherSID = sid;
+            GetOtherInventory();
+        }
+
+        /// <summary>
+        /// Gets the other's inventory and stores it in OtherInventory.
+        /// </summary>
+        /// <example> This sample shows how to find items in the other's inventory from a user handler.
+        /// <code>
+        /// GetInventory(); // Not necessary unless you know the user's inventory has changed
+        /// foreach (var item in OtherInventory)
+        /// {
+        ///     if (item.Defindex == 5021)
+        ///     {
+        ///         // Bot has a key in its inventory
+        ///     }
+        /// }
+        /// </code>
+        /// </example>
+        public void GetOtherInventory()
+        {
+            otherInventoryTask = Task.Factory.StartNew(() =>Inventory.FetchInventory(OtherSID, Bot.apiKey));
+        }
+
+        public Inventory OtherInventory
+        {
+            get
+            {
+                otherInventoryTask.Wait();
+                return otherInventoryTask.Result;
+            }
         }
 
         /// <summary>
@@ -36,7 +71,7 @@ namespace SteamBot
         /// <summary>
         /// Gets the log the bot uses for convenience.
         /// </summary>
-        protected Log Log
+        public Log Log
         {
             get { return Bot.log; }
         }
@@ -47,7 +82,7 @@ namespace SteamBot
         /// <value>
         /// <c>true</c> if the other user is a configured admin; otherwise, <c>false</c>.
         /// </value>
-        protected bool IsAdmin
+        public bool IsAdmin
         {
             get { return Bot.Admins.Contains (OtherSID); }
         }
@@ -92,6 +127,16 @@ namespace SteamBot
         /// </returns>
         public abstract bool OnTradeRequest ();
 
+
+        /// <summary>
+        /// Called when a new trade offer is received
+        /// </summary>
+        /// <param name="offer"></param>
+        public virtual void OnNewTradeOffer(TradeOffer offer)
+        {
+
+        }
+
         /// <summary>
         /// Called when a chat message is sent in a chatroom
         /// </summary>
@@ -126,6 +171,14 @@ namespace SteamBot
         // see the various events in SteamTrade.Trade for descriptions of these handlers.
 
         public abstract void OnTradeError (string error);
+
+        public virtual void OnStatusError(Trade.TradeStatusType status)
+        {
+            string otherUserName = Bot.SteamFriends.GetFriendPersonaName(OtherSID);
+            string statusMessage = (Trade != null ? Trade.GetTradeStatusErrorString(status) : "died a horrible death");
+            string errorMessage = String.Format("Trade with {0} ({1}) {2}", otherUserName, OtherSID.ConvertToUInt64(), statusMessage);
+            OnTradeError(errorMessage);
+        }
 
         public abstract void OnTradeTimeout ();
 
