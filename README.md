@@ -8,6 +8,7 @@ There are several things you must do in order to get SteamBot working:
 4. *Optionally*, customize the bot by changing the source code.
 
 ## Getting the Source
+###############################3
 
 Retrieving the source code should be done by following the [installation guide] on the wiki. The install guide covers the instructions needed to obtain the source code as well as the instructions for compiling the code.
 
