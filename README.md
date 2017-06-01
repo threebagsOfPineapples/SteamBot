@@ -22,7 +22,7 @@ While running the bots you may find it necessary to do some basic operations lik
 ## More help?
 If it's a bug, open an Issue; if you have a fix, read [CONTRIBUTING.md] and open a Pull Request.  If it is a question about how to use SteamBot with your own bots, visit our subreddit at [/r/SteamBot](http://www.reddit.com/r/SteamBot). Please use the issue tracker only for bugs reports and pull requests. The subreddit should be used for all other  discussions.
 
-
+...
 A list of contributors (add yourself if you want to):
 
 - [Jessecar96](http://steamcommunity.com/id/jessecar) (project lead)
